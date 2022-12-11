@@ -12,7 +12,7 @@ const sendEmail= async(email,subject,text)=>{
         });
 
         await transporter.sendMail({
-            from: "codehelperforum@gmail.com",
+            from: "SmartGardent@gmail.com",
             to: email,
             subject: subject,
             text:'Your code : '+text 
@@ -23,4 +23,4 @@ const sendEmail= async(email,subject,text)=>{
         console.log(error, "email not sent");
     }
 }
-module.exports= sendEmail
+module.exports= sendEmail;

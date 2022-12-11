@@ -1,7 +1,8 @@
 const Account = require("../models/Account");
 const utils = require("../utils");
 const moment = require("moment");
-const { generateRandomStr } = require("../utils");
+const { generateRandomStr, sha256 } = require("../utils");
+const sendEmail = require("../utils/nodeMailer");
 
 const accountController = {
     signIn: async (req, res) => {
@@ -99,9 +100,167 @@ const accountController = {
         }
     },
 
-    logOut: async (req, res) => {
+    signOut: async (req, res) => {
+        try {
+            const accessToken = req.headers.authorization.split(" ")[1]
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            })
+            await account.updateOne({
+                accessToken: null,
+                expirationDateToken: null,
+            })
 
-    }
+            const responseAccount = await Account.findOne({
+                _id: account._id,
+            })
+            res.send({
+                result: "success",
+            })
+        } catch (error) {
+            res.status(500).send({
+                result: "failed",
+                reason: error.message,
+            })
+        }
+    },
+
+    requestToResetPassword: async (req, res) => {
+        try {
+            let { email } = req.body
+
+            let account = await Account.findOne({
+                email: email,
+            })
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "email không hợp lệ",
+                })
+            }
+            var random = 100000 + Math.random() * 900000
+            var plainResetPasswordToken = Math.floor(random)
+
+            const hashedResetPasswordToken = await utils.sha256(
+                plainResetPasswordToken.toString()
+            )
+
+            var expirationDate = new Date()
+            var time = expirationDate.getTime()
+            var time1 = time + 5 * 60 * 1000
+            var setTime = expirationDate.setTime(time1)
+            var expirationDateStr = moment(setTime)
+                .format("YYYY-MM-DD HH:mm:ss")
+                .toString()
+
+            await Account.findOneAndUpdate(
+                {
+                    email: email,
+                },
+                {
+                    resetPasswordToken: hashedResetPasswordToken,
+                    expirationDateResetPasswordToken: expirationDateStr,
+                }
+            )
+
+            await sendEmail(
+                email,
+                "SmartGardent your reset password code",
+                plainResetPasswordToken
+            );
+
+            res.send({
+                result: "success",
+                expirationDate: moment(expirationDate).toDate(),
+            })
+
+        } catch (error) {
+            res.send({
+                result: "failed",
+                message: error,
+            })
+        }
+    },
+
+    resetPassword: async (req, res) => {
+        try {
+            let { email, resetPasswordToken, newPassword } = req.body
+
+            let account = await Account.findOne({
+                email: email,
+            })
+
+            const hashedResetPasswordToken = utils.sha256(resetPasswordToken)
+
+            const hashedPassword = utils.sha256(newPassword)
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "Đổi mật khẩu không thành công",
+                })
+            }
+
+            if (account.resetPasswordToken === hashedResetPasswordToken) {
+                await Account.findOneAndUpdate(
+                    {
+                        email: email,
+                    },
+                    {
+                        resetPasswordToken: null,
+                        expirationDateResetPasswordToken: null,
+                        password: hashedPassword,
+                    }
+                )
+                return res.send({
+                    result: "success",
+                    message: "Thay đổi mật khẩu thành công",
+                })
+            }
+        } catch (error) {
+            res.send({
+                result: "failed",
+                message: error,
+            })
+        }
+    },
+    changePassword: async (req, res) => {
+        try {
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            })
+            const password = await sha256(req.body.password)
+            const newPassword = await sha256(req.body.newPassword)
+            
+            if (account) {
+                if (password === account.password) {
+                    await Account.findByIdAndUpdate(account.id, {
+                        password: newPassword,
+                    })
+                    return res.send({
+                        result: "success",
+                        message: "Đổi mật khẩu thành công",
+                    })
+                }
+                return res.send({
+                    result: "failed",
+                    message: "Mật khẩu cũ không chính xác",
+                })
+            }
+            return res.send({
+                result: "faled",
+                message: "Sai email",
+            })
+        } catch (err) {
+            res.send({
+                result: "faled",
+                message: err,
+            })
+        }
+    },
 };
 
 module.exports = accountController;

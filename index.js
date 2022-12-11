@@ -56,6 +56,12 @@ connectMQTT();
 app.use(accountRouter, function (req, res, next) {
     next();
 });
+app.use('/', function (req, res, next) {
+    res.status(200).json({
+        result: "success",
+        message: "oke oke"
+    })
+});
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

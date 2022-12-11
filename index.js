@@ -53,7 +53,6 @@ database.connect();
 connectMQTT();
 
 
-
 app.use(accountRouter, function (req, res, next) {
     next();
 });

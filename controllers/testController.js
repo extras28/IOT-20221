@@ -10,6 +10,9 @@ const client = mqtt.connect(broker, options);
 const testController = {
     sendMessageToSenser: async (req, res) => {
         try {
+            const test = {
+                request: "1",
+            }
             client.publish(topic, JSON.stringify({
                 "key1": "value1"
             }), (err) => {

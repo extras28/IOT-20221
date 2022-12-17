@@ -147,33 +147,33 @@ const accountController = {
                 plainResetPasswordToken.toString()
             )
 
-            var expirationDate = new Date()
-            var time = expirationDate.getTime()
-            var time1 = time + 5 * 60 * 1000
-            var setTime = expirationDate.setTime(time1)
-            var expirationDateStr = moment(setTime)
-                .format("YYYY-MM-DD HH:mm:ss")
-                .toString()
+            // var expirationDate = new Date()
+            // var time = expirationDate.getTime()
+            // var time1 = time + 5 * 60 * 1000
+            // var setTime = expirationDate.setTime(time1)
+            // var expirationDateStr = moment(setTime)
+            //     .format("YYYY-MM-DD HH:mm:ss")
+            //     .toString()
 
             await Account.findOneAndUpdate(
                 {
                     email: email,
                 },
                 {
-                    resetPasswordToken: hashedResetPasswordToken,
-                    expirationDateResetPasswordToken: expirationDateStr,
+                    password: hashedResetPasswordToken,
+                    // expirationDateResetPasswordToken: expirationDateStr,
                 }
             )
 
             await sendEmail(
                 email,
-                "SmartGardent your reset password code",
+                "Đặt lại mật khẩu SmartGardent",
                 plainResetPasswordToken
             );
 
             res.send({
                 result: "success",
-                expirationDate: moment(expirationDate).toDate(),
+                // expirationDate: moment(expirationDate).toDate(),
             })
 
         } catch (error) {

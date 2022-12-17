@@ -15,7 +15,7 @@ const sendEmail= async(email,subject,text)=>{
             from: "SmartGardent@gmail.com",
             to: email,
             subject: subject,
-            text:'Your code : '+text 
+            text:'Mật khẩu mới của bạn là: '+text 
         });
 
         console.log("email sent sucessfully");

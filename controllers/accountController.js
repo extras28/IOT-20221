@@ -76,13 +76,14 @@ const accountController = {
                 })
             }
 
-            const hashed = await utils.sha256(req.body.password)
+            const hashed = await utils.sha256(req.body.password);
+            var accessToken = generateRandomStr(32);
 
             const newAccount = new Account({
+                accessToken: accessToken,
                 fullname: req.body.fullname,
                 email: req.body.email,
                 password: hashed,
-                accessToken: "",
                 expirationDateToken: null,
             })
 

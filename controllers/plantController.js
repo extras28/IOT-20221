@@ -2,6 +2,7 @@ const Account = require("../models/Account");
 const Balcony = require("../models/Balcony");
 const Plant = require("../models/Plant");
 const mqtt = require("mqtt");
+const utils = require("../utils");
 const broker = "mqtt://broker.mqttdashboard.com:1883";
 const topic = "DUNGNA_RECEIVING";
 const options = {};
@@ -99,14 +100,83 @@ const plantController = {
 
     updateData: async (data) => {
         try {
-            const { temperature, humidity, sensorId } = data;
-            await Plant.findOneAndUpdate(
-                { plantId: sensorId },
-                {
+            const { temperature, humidity, plantId } = data;
+
+            const plant = await Plant.findOne({ plantId: plantId });
+
+            if (plant) {
+                await plant.updateOne({
                     temperature: temperature,
                     humidity: humidity,
+                });
+                if (!plant.autoMode) {
+                    // res.status(200).json({
+                    //     result: "success",
+                    //     plant: plant,
+                    // });
+                    return;
                 }
-            );
+                if (utils.conditionCheck(temperature, humidity)) {
+                    client.publish(
+                        topic,
+                        JSON.stringify({
+                            requestCode: 1,
+                            plantId: plantId,
+                        }),
+                        (err) => {
+                            if (err) {
+                                return console.log({
+                                    result: "failed",
+                                    message: err.message,
+                                });
+                            } else {
+                                console.log({
+                                    result: "success",
+                                    message: "Yêu cầu đã được gửi",
+                                });
+                            }
+                        }
+                    );
+                } else {
+                    client.publish(
+                        topic,
+                        JSON.stringify({
+                            requestCode: 0,
+                            plantId: plantId,
+                        }),
+                        (err) => {
+                            if (err) {
+                                return console.log({
+                                    result: "failed",
+                                    message: err.message,
+                                });
+                            } else {
+                                console.log({
+                                    result: "success",
+                                    message: "Yêu cầu đã được gửi",
+                                });
+                            }
+                        }
+                    );
+                }
+                // res.status(200).json({
+                //     result: "success",
+                //     plant: plant,
+                // });
+            } else {
+                res.status(200).json({
+                    result: "failed",
+                    message: "Không tìm được cây",
+                });
+            }
+
+            // await Plant.findOneAndUpdate(
+            //     { plantId: sensorId },
+            //     {
+            //         temperature: temperature,
+            //         humidity: humidity,
+            //     }
+            // );
         } catch (error) {
             console.log({
                 result: "failed",
@@ -152,6 +222,50 @@ const plantController = {
             });
         }
     },
+
+    toggleAutoMode: async (req, res) => {
+        try {
+            const { plantId, autoMode } = req.body;
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const plant = await Plant.findOneAndUpdate(
+                { plantId: plantId },
+                {
+                    autoMode: autoMode,
+                }
+            );
+
+            if (plant) {
+                res.status(200).json({
+                    result: "success",
+                    message: `Chế độ tự động đã được ${autoMode ? "bật" : "tắt"} đối với cây ${plantId}`,
+                });
+            } else {
+                res.status(200).json({
+                    result: "failed",
+                    message: "Không tìm được cây",
+                });
+            }
+        } catch (error) {
+            res.status(404).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
+
+    // findAll
 };
 
 module.exports = plantController;

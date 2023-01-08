@@ -1,7 +1,7 @@
 const moment = require("moment");
 const _ = require("lodash");
 const crypto = require("crypto");
-const sha256 = require('js-sha256');
+const sha256 = require("js-sha256");
 
 const utils = {
     /**
@@ -48,16 +48,25 @@ const utils = {
     },
     // Check object empty
     isObjectEmpty: (obj) => {
-        return (utils.isObjectNull(obj) ||
-            (Object.keys(obj).length === 0 && obj.constructor === Object)
-        );
+        return utils.isObjectNull(obj) || (Object.keys(obj).length === 0 && obj.constructor === Object);
     },
 
     // Check object null|undefine
     isObjectNull: (obj) => {
-        return (
-            obj === null || obj === undefined || obj === "NULL" || obj === "null"
-        );
+        return obj === null || obj === undefined || obj === "NULL" || obj === "null";
+    },
+
+    conditionCheck: (temperature, humidity) => {
+        const breakpoint = {
+            temperature: 24,
+            humidity: 86,
+        };
+
+        if (parseFloat(temperature) > breakpoint.temperature || parseFloat(humidity) < breakpoint.humidity) {
+            return true;
+        }
+
+        return false;
     },
 };
 

@@ -14,7 +14,7 @@ const accountController = {
             if (!account) {
                 return res.status(404).json({
                     result: "failed",
-                    message: "Email không đúng",
+                    message: "Tài khoản không tồn tại",
                 })
             }
 

@@ -5,8 +5,10 @@ const database = require("./configs/database/index");
 const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser");
 const { connectMQTT } = require("./utils/mqtt");
-const testRouter = require('./routes/testRoute');
-const accountRouter = require('./routes/accountRouter');
+const testRouter = require("./routes/testRoute");
+const accountRouter = require("./routes/accountRouter");
+const balconyRouter = require("./routes/balconyRouter");
+const plantRouter = require("./routes/plantRouter");
 
 const corsOpts = {
     origin: "*",
@@ -18,13 +20,13 @@ const corsOpts = {
 app.use(cors(corsOpts));
 
 app.use(
-  fileUpload({
-    createParentPath: true,
-    useTempFiles: true,
-    uriDecodeFileNames: true,
-    defParamCharset: 'utf8',
-    abortOnLimit: true,
-  }),
+    fileUpload({
+        createParentPath: true,
+        useTempFiles: true,
+        uriDecodeFileNames: true,
+        defParamCharset: "utf8",
+        abortOnLimit: true,
+    })
 );
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -50,17 +52,25 @@ app.use(
 database.connect();
 
 // mqtt connect
-connectMQTT();
-
+connectMQTT("DUNGNA_SENDING");
 
 app.use(accountRouter, function (req, res, next) {
     next();
 });
-app.use('/', function (req, res, next) {
+
+app.use(balconyRouter, function (req, res, next) {
+    next();
+});
+
+app.use(plantRouter, function (req, res, next) {
+    next();
+});
+
+app.use("/", function (req, res, next) {
     res.status(200).json({
         result: "success",
-        message: "oke oke"
-    })
+        message: "oke oke",
+    });
 });
 
 const PORT = process.env.PORT || 8000;

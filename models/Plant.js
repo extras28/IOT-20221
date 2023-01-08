@@ -9,6 +9,8 @@ const plant = new mongoose.Schema(
         temperature: Number,
         numberOfWatteringTimeThisDay: Number,
         autoMode: Boolean,
+        temperatureBreakpoint: Number,
+        humidityBreakpoint: Number,
     },
     { timestamps: true }
 );

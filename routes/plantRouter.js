@@ -14,4 +14,7 @@ router.get("/api/v1/plant/detail", plantController.detail);
 // toggle auto mode
 router.post("/api/v1/plant/auto-mode", plantController.toggleAutoMode)
 
+//set breakpoint
+router.post("/api/v1/plant/breakpoint", plantController.setBreakpoint)
+
 module.exports = router;

@@ -25,6 +25,13 @@ const plantController = {
                     message: "Không đủ quyền truy cập",
                 });
             }
+            const oldPlant = await Plant.findOne({ plantId: plantId });
+            if (oldPlant) {
+                return res.status(404).json({
+                    result: "failed",
+                    message: "Cây với id này đã tồn tại",
+                });
+            }
             const plant = new Plant({
                 plantId: plantId,
                 name: name,
@@ -32,6 +39,9 @@ const plantController = {
                 temperature: 0,
                 numberOfWatteringTimeThisDay: 0,
                 accountId: account._id,
+                humidityBreakpoint: 0,
+                temperatureBreakpoint: 0,
+                autoMode: false,
             });
 
             await plant.save();
@@ -116,7 +126,10 @@ const plantController = {
                     // });
                     return;
                 }
-                if (utils.conditionCheck(temperature, humidity)) {
+                if (
+                    parseFloat(temperature) > plant.temperatureBreakpoint ||
+                    parseFloat(humidity) < plant.humidityBreakpoint
+                ) {
                     client.publish(
                         topic,
                         JSON.stringify({
@@ -239,6 +252,29 @@ const plantController = {
                 });
             }
 
+            if (!autoMode) {
+                client.publish(
+                    topic,
+                    JSON.stringify({
+                        requestCode: 0,
+                        plantId: plantId,
+                    }),
+                    (err) => {
+                        if (err) {
+                            return console.log({
+                                result: "failed",
+                                message: err.message,
+                            });
+                        } else {
+                            console.log({
+                                result: "success",
+                                message: "Yêu cầu đã được gửi",
+                            });
+                        }
+                    }
+                );
+            }
+
             const plant = await Plant.findOneAndUpdate(
                 { plantId: plantId },
                 {
@@ -266,6 +302,48 @@ const plantController = {
     },
 
     // findAll
+    setBreakpoint: async (req, res) => {
+        try {
+            const { plantId, temperatureBreakpoint, humidityBreakpoint } = req.body;
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const plant = await Plant.findOneAndUpdate(
+                { plantId: plantId },
+                {
+                    temperatureBreakpoint: parseFloat(temperatureBreakpoint),
+                    humidityBreakpoint: parseFloat(humidityBreakpoint),
+                }
+            );
+
+            if (plant) {
+                res.status(200).json({
+                    result: "success",
+                    message: "Cập nhật thành công",
+                });
+            } else {
+                res.status(200).json({
+                    result: "failed",
+                    message: "Không tìm được cây",
+                });
+            }
+        } catch (error) {
+            res.status(404).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
 };
 
 module.exports = plantController;

@@ -344,6 +344,35 @@ const plantController = {
             });
         }
     },
+
+    find: async (req, res) => {
+        try {
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.status(403).send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const plants = await Plant.find();
+
+            return res.status(200).send({
+                result: "success",
+                plants: plants,
+            });
+        } catch (error) {
+            res.status(404).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
 };
 
 module.exports = plantController;

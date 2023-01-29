@@ -12,9 +12,12 @@ router.post("/api/v1/plant/control", plantController.control);
 router.get("/api/v1/plant/detail", plantController.detail);
 
 // toggle auto mode
-router.post("/api/v1/plant/auto-mode", plantController.toggleAutoMode)
+router.post("/api/v1/plant/auto-mode", plantController.toggleAutoMode);
 
 //set breakpoint
-router.post("/api/v1/plant/breakpoint", plantController.setBreakpoint)
+router.post("/api/v1/plant/breakpoint", plantController.setBreakpoint);
+
+//find all
+router.get("/api/v1/plant/find", plantController.find);
 
 module.exports = router;

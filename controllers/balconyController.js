@@ -73,6 +73,36 @@ const balconyController = {
             });
         }
     },
+    detail: async (req, res) => {
+        try {
+            const { balconyId } = req.body;
+
+            console.log(req.body);
+
+            const accessToken = req.headers.authorization.split(" ")[1];
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.status(403).send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const balcony = await Balcony.findOne({ _id: balconyId }).populate({ path: "plants" });
+            res.status(200).send({
+                result: "success",
+                balcony: balcony,
+            });
+        } catch (error) {
+            res.status(404).send({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
 };
 
 module.exports = balconyController;

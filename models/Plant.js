@@ -11,6 +11,7 @@ const plant = new mongoose.Schema(
         autoMode: Boolean,
         temperatureBreakpoint: Number,
         humidityBreakpoint: Number,
+        image: String,
     },
     { timestamps: true }
 );

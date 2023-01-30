@@ -279,12 +279,14 @@ const plantController = {
                 { plantId: plantId },
                 {
                     autoMode: autoMode,
-                }
+                },
+                { new: true }
             );
 
             if (plant) {
                 res.status(200).json({
                     result: "success",
+                    plant: plant,
                     message: `Chế độ tự động đã được ${autoMode ? "bật" : "tắt"} đối với cây ${plantId}`,
                 });
             } else {

@@ -75,9 +75,7 @@ const balconyController = {
     },
     detail: async (req, res) => {
         try {
-            const { balconyId } = req.body;
-
-            console.log(req.body);
+            const { balconyId } = req.query;
 
             const accessToken = req.headers.authorization.split(" ")[1];
             const account = await Account.findOne({

@@ -35,12 +35,14 @@ const plantController = {
             const plant = new Plant({
                 plantId: plantId,
                 name: name,
-                humidity: 0,
-                temperature: 0,
+                plantHumidity: 0,
+                enviromentHumidity: 0,
+                enviromentTemperature: 0,
                 numberOfWatteringTimeThisDay: 0,
                 accountId: account._id,
-                humidityBreakpoint: 0,
-                temperatureBreakpoint: 0,
+                enviromentHumidityBreakpoint: 0,
+                enviromentTemperatureBreakpoint: 0,
+                plantHumidityBreakpoint: 0,
                 autoMode: false,
             });
 
@@ -110,14 +112,15 @@ const plantController = {
 
     updateData: async (data) => {
         try {
-            const { temperature, humidity, plantId } = data;
+            const { enviromentTemperature, enviromentHumidity, plantId, plantHumidity } = data;
 
             const plant = await Plant.findOne({ plantId: plantId });
 
             if (plant) {
                 await plant.updateOne({
-                    temperature: temperature,
-                    humidity: humidity,
+                    enviromentTemperature: enviromentTemperature,
+                    enviromentHumidity: enviromentHumidity,
+                    plantHumidity: plantHumidity,
                 });
                 if (!plant.autoMode) {
                     // res.status(200).json({
@@ -127,8 +130,9 @@ const plantController = {
                     return;
                 }
                 if (
-                    parseFloat(temperature) > plant.temperatureBreakpoint ||
-                    parseFloat(humidity) < plant.humidityBreakpoint
+                    // parseFloat(enviromentTemperature) > plant.enviromentTemperatureBreakpoint ||
+                    // parseFloat(enviromentHumidity) < plant.enviromentHumidityBreakpoint ||
+                    parseFloat(plantHumidity) < plant.plantHumidityBreakpoint
                 ) {
                     client.publish(
                         topic,
@@ -306,7 +310,7 @@ const plantController = {
     // findAll
     setBreakpoint: async (req, res) => {
         try {
-            const { plantId, temperatureBreakpoint, humidityBreakpoint } = req.body;
+            const { plantId, enviromentTemperatureBreakpoint, enviromentHumidityBreakpoin, plantHumidityBreakpoint } = req.body;
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const account = await Account.findOne({
@@ -314,7 +318,7 @@ const plantController = {
             });
 
             if (!account) {
-                return res.send({
+                return res.status(403).send({
                     result: "failed",
                     message: "Không đủ quyền truy cập",
                 });
@@ -323,8 +327,9 @@ const plantController = {
             const plant = await Plant.findOneAndUpdate(
                 { plantId: plantId },
                 {
-                    temperatureBreakpoint: parseFloat(temperatureBreakpoint),
-                    humidityBreakpoint: parseFloat(humidityBreakpoint),
+                    enviromentTemperatureBreakpoint: parseFloat(enviromentTemperatureBreakpoint),
+                    enviromentHumidityBreakpoint: parseFloat(enviromentHumidityBreakpoin),
+                    plantHumidityBreakpoint: parseFloat(plantHumidityBreakpoint),
                 }
             );
 

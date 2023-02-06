@@ -123,81 +123,18 @@ const plantController = {
                     plantHumidity: plantHumidity,
                 });
                 if (!plant.autoMode) {
-                    // res.status(200).json({
-                    //     result: "success",
-                    //     plant: plant,
-                    // });
                     return;
                 }
-                if (
-                    // parseFloat(enviromentTemperature) > plant.enviromentTemperatureBreakpoint ||
-                    // parseFloat(enviromentHumidity) < plant.enviromentHumidityBreakpoint ||
-                    parseFloat(plantHumidity) < plant.plantHumidityBreakpoint
-                ) {
-                    client.publish(
-                        topic,
-                        JSON.stringify({
-                            requestCode: 1,
-                            plantId: plantId,
-                        }),
-                        (err) => {
-                            if (err) {
-                                return console.log({
-                                    result: "failed",
-                                    message: err.message,
-                                });
-                            } else {
-                                console.log({
-                                    result: "success",
-                                    message: "Yêu cầu đã được gửi",
-                                });
-                            }
-                        }
-                    );
-                } else {
-                    client.publish(
-                        topic,
-                        JSON.stringify({
-                            requestCode: 0,
-                            plantId: plantId,
-                        }),
-                        (err) => {
-                            if (err) {
-                                return console.log({
-                                    result: "failed",
-                                    message: err.message,
-                                });
-                            } else {
-                                console.log({
-                                    result: "success",
-                                    message: "Yêu cầu đã được gửi",
-                                });
-                            }
-                        }
-                    );
-                }
-                // res.status(200).json({
-                //     result: "success",
-                //     plant: plant,
-                // });
             } else {
                 res.status(200).json({
                     result: "failed",
                     message: "Không tìm được cây",
                 });
             }
-
-            // await Plant.findOneAndUpdate(
-            //     { plantId: sensorId },
-            //     {
-            //         temperature: temperature,
-            //         humidity: humidity,
-            //     }
-            // );
         } catch (error) {
             console.log({
                 result: "failed",
-                message: "Can not update plant data",
+                message: "Không thể cập nhật dữ liệu cho cây",
                 reason: error.message,
             });
         }
@@ -256,35 +193,34 @@ const plantController = {
                 });
             }
 
-            if (!autoMode) {
-                client.publish(
-                    topic,
-                    JSON.stringify({
-                        requestCode: 0,
-                        plantId: plantId,
-                    }),
-                    (err) => {
-                        if (err) {
-                            return console.log({
-                                result: "failed",
-                                message: err.message,
-                            });
-                        } else {
-                            console.log({
-                                result: "success",
-                                message: "Yêu cầu đã được gửi",
-                            });
-                        }
-                    }
-                );
-            }
-
             const plant = await Plant.findOneAndUpdate(
                 { plantId: plantId },
                 {
                     autoMode: autoMode,
                 },
                 { new: true }
+            );
+
+            client.publish(
+                topic,
+                JSON.stringify({
+                    autoMode: autoMode,
+                    plantId: plantId,
+                    soilHumidityBreakpoint: plant.plantHumidityBreakpoint,
+                }),
+                (err) => {
+                    if (err) {
+                        return console.log({
+                            result: "failed",
+                            message: err.message,
+                        });
+                    } else {
+                        console.log({
+                            result: "success",
+                            message: "Yêu cầu đã được gửi",
+                        });
+                    }
+                }
             );
 
             if (plant) {
@@ -310,7 +246,8 @@ const plantController = {
     // findAll
     setBreakpoint: async (req, res) => {
         try {
-            const { plantId, enviromentTemperatureBreakpoint, enviromentHumidityBreakpoin, plantHumidityBreakpoint } = req.body;
+            const { plantId, enviromentTemperatureBreakpoint, enviromentHumidityBreakpoin, plantHumidityBreakpoint } =
+                req.body;
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const account = await Account.findOne({
@@ -327,9 +264,32 @@ const plantController = {
             const plant = await Plant.findOneAndUpdate(
                 { plantId: plantId },
                 {
-                    enviromentTemperatureBreakpoint: parseFloat(enviromentTemperatureBreakpoint),
-                    enviromentHumidityBreakpoint: parseFloat(enviromentHumidityBreakpoin),
+                    // enviromentTemperatureBreakpoint: parseFloat(enviromentTemperatureBreakpoint),
+                    // enviromentHumidityBreakpoint: parseFloat(enviromentHumidityBreakpoin),
                     plantHumidityBreakpoint: parseFloat(plantHumidityBreakpoint),
+                },
+                { new: true }
+            );
+
+            client.publish(
+                topic,
+                JSON.stringify({
+                    soilHumidityBreakpoint: parseInt(plantHumidityBreakpoint),
+                    plantId: plantId,
+                    autoMode: plant.autoMode,
+                }),
+                (err) => {
+                    if (err) {
+                        return console.log({
+                            result: "failed",
+                            message: err.message,
+                        });
+                    } else {
+                        console.log({
+                            result: "success",
+                            message: "Yêu cầu đã được gửi",
+                        });
+                    }
                 }
             );
 

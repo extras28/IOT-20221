@@ -122,15 +122,20 @@ const plantController = {
                     enviromentHumidity: enviromentHumidity,
                     plantHumidity: plantHumidity,
                 });
-                if (!plant.autoMode) {
-                    return;
-                }
             } else {
                 res.status(200).json({
                     result: "failed",
                     message: "Không tìm được cây",
                 });
             }
+
+            await Balcony.findOneAndUpdate(
+                { plants: { $in: [plant?._id] } },
+                {
+                    temperature: enviromentTemperature,
+                    humidity: enviromentHumidity,
+                }
+            );
         } catch (error) {
             console.log({
                 result: "failed",
@@ -142,7 +147,8 @@ const plantController = {
 
     detail: async (req, res) => {
         try {
-            const { plantId } = req.body;
+            const { plantId } = req.query;
+
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const account = await Account.findOne({
@@ -158,6 +164,12 @@ const plantController = {
 
             const plant = await Plant.findOne({ plantId: plantId });
 
+            // console.log(plant._id);
+
+            const balcony = await Balcony.findOne({ plants: { $in: [plant?._id] } });
+            return res.json({
+                balcony: balcony,
+            });
             if (plant) {
                 res.status(200).json({
                     result: "success",

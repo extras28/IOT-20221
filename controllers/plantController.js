@@ -12,51 +12,22 @@ const client = mqtt.connect(broker, options);
 const plantController = {
     create: async (req, res) => {
         try {
-            const { name, plantId, balconyId } = req.body;
-            const accessToken = req.headers.authorization.split(" ")[1];
-
-            const account = await Account.findOne({
-                accessToken: accessToken,
-            });
-
-            if (!account) {
-                return res.send({
-                    result: "failed",
-                    message: "Không đủ quyền truy cập",
+            const plants = await Plant.find({ balconyId: "EC:FA:BC:28:0E:66" });
+            // const plant = plants.find((item) => {
+            //     console.log(item.plantId);
+            //     return item.plantId === "EC:FA:BC:28:0E:660";
+            // });
+            // console.log(plant);
+            let testArr = [];
+            for (let i = 0; i < 15; i++) {
+                const havePlant = plants.find((item) => {
+                    return item.plantId == `EC:FA:BC:28:0E:66${i}`;
                 });
+                testArr = testArr.concat(havePlant);
             }
-            const oldPlant = await Plant.findOne({ plantId: plantId });
-            if (oldPlant) {
-                return res.status(404).json({
-                    result: "failed",
-                    message: "Cây với id này đã tồn tại",
-                });
-            }
-            const plant = new Plant({
-                plantId: plantId,
-                name: name,
-                plantHumidity: 0,
-                enviromentHumidity: 0,
-                enviromentTemperature: 0,
-                numberOfWatteringTimeThisDay: 0,
-                accountId: account._id,
-                enviromentHumidityBreakpoint: 0,
-                enviromentTemperatureBreakpoint: 0,
-                plantHumidityBreakpoint: 0,
-                autoMode: false,
-            });
-
-            await plant.save();
-
-            await Balcony.findByIdAndUpdate(balconyId, {
-                $push: {
-                    plants: plant._id,
-                },
-            });
-
-            res.status(200).json({
-                result: "success",
-                plant: plant,
+            res.send({
+                plants: plants,
+                havePlant: testArr,
             });
         } catch (error) {
             res.status(404).json({
@@ -85,8 +56,10 @@ const plantController = {
             client.publish(
                 topic,
                 JSON.stringify({
+                    flag: 0,
                     requestCode: parseInt(requestCode),
-                    plantId: plantId,
+                    plantId: parseInt(plantId.slice(-1)),
+                    balconyId: plantId.slice(0, plantId.length - 1),
                 }),
                 (err) => {
                     if (err) {
@@ -112,30 +85,38 @@ const plantController = {
 
     updateData: async (data) => {
         try {
-            const { enviromentTemperature, enviromentHumidity, plantId, plantHumidity } = data;
-
-            const plant = await Plant.findOne({ plantId: plantId });
-
-            if (plant) {
-                await plant.updateOne({
-                    enviromentTemperature: enviromentTemperature,
-                    enviromentHumidity: enviromentHumidity,
-                    plantHumidity: plantHumidity,
+            const { balconyId, enviromentTemperature, enviromentHumidity, sensorArr } = data;
+            const plants = await Plant.find({ balconyId: balconyId });
+            for (let i = 0; i < sensorArr.length; i++) {
+                const havePlant = plants.find((item) => {
+                    return item.plantId == `EC:FA:BC:28:0E:66${i}`;
                 });
-            } else {
-                res.status(200).json({
-                    result: "failed",
-                    message: "Không tìm được cây",
-                });
-            }
-
-            await Balcony.findOneAndUpdate(
-                { plants: { $in: [plant?._id] } },
-                {
-                    temperature: enviromentTemperature,
-                    humidity: enviromentHumidity,
+                if (sensorArr[i] < 100) {
+                    if (havePlant) {
+                        await Plant.findOneAndUpdate(
+                            { plantId: balconyId + i.toString() },
+                            {
+                                soilMoisture: sensorArr[i],
+                            }
+                        );
+                    } else {
+                        const newPlant = new Plant({
+                            balconyId: balconyId,
+                            plantId: balconyId + i.toString(),
+                            name: `Cây số ${i}`,
+                            soilMoisture: sensorArr[i],
+                            autoMode: false,
+                            status: "PENDING",
+                            image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
+                        });
+                        await newPlant.save();
+                    }
+                } else {
+                    if (havePlant) {
+                        await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
+                    }
                 }
-            );
+            }
         } catch (error) {
             console.log({
                 result: "failed",

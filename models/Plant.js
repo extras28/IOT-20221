@@ -2,17 +2,13 @@ const mongoose = require("mongoose");
 
 const plant = new mongoose.Schema(
     {
-        accountId: { type: mongoose.Schema.Types.ObjectId, ref: "account" },
+        balconyId: String,
         plantId: String,
         name: String,
-        plantHumidity: Number,
-        enviromentTemperature: Number,
-        enviromentHumidity: Number,
-        numberOfWatteringTimeThisDay: Number,
+        soilMoisture: Number,
         autoMode: Boolean,
-        enviromentTemperatureBreakpoint: Number,
-        enviromentHumidityBreakpoint: Number,
-        plantHumidityBreakpoint: Number,
+        soilMoistureBreakpoint: Number,
+        status: String,
         image: String,
     },
     { timestamps: true }

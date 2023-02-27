@@ -5,7 +5,6 @@ const database = require("./configs/database/index");
 const fileUpload = require("express-fileupload");
 const bodyParser = require("body-parser");
 const { connectMQTT } = require("./utils/mqtt");
-const testRouter = require("./routes/testRoute");
 const accountRouter = require("./routes/accountRouter");
 const balconyRouter = require("./routes/balconyRouter");
 const plantRouter = require("./routes/plantRouter");

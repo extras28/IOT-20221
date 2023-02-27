@@ -6,12 +6,7 @@ const balcony = new mongoose.Schema(
         name: String,
         humidity: Number,
         temperature: Number,
-        plants: [
-            {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "plant",
-            },
-        ],
+        balconyId: String,
     },
     {
         timestamps: true,

@@ -17,7 +17,10 @@ router.post("/api/v1/plant/auto-mode", plantController.toggleAutoMode);
 //set breakpoint
 router.post("/api/v1/plant/breakpoint", plantController.setBreakpoint);
 
-//find all
+//find by balcony
 router.get("/api/v1/plant/find", plantController.find);
+
+//update name and image
+router.put("/api/v1/plant/update", plantController.update);
 
 module.exports = router;

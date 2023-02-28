@@ -7,6 +7,8 @@ const plant = new mongoose.Schema(
         name: String,
         soilMoisture: Number,
         autoMode: Boolean,
+        envTemp: Number,
+        envHumi: Number,
         soilMoistureBreakpoint: Number,
         status: String,
         image: String,

@@ -4,7 +4,7 @@ const Balcony = require("../models/Balcony");
 const balconyController = {
     createBalcony: async (req, res) => {
         try {
-            const { name } = req.body;
+            const { name, balconyId } = req.body;
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const balcony = await Balcony.findOne({ name: name });
@@ -28,9 +28,11 @@ const balconyController = {
             } else {
                 const newBalcony = new Balcony({
                     account: account._id,
+                    balconyId: balconyId,
                     name: name,
                     humidity: 0,
                     temperature: 0,
+                    image: "https://i.pinimg.com/564x/05/fc/9d/05fc9d39ac383eea6b85c0321771c326.jpg",
                 });
                 await newBalcony.save();
 
@@ -60,7 +62,7 @@ const balconyController = {
                 });
             }
 
-            const balconies = await Balcony.find();
+            const balconies = await Balcony.find({ account: account._id });
 
             return res.send({
                 result: "success",
@@ -89,7 +91,7 @@ const balconyController = {
                 });
             }
 
-            const balcony = await Balcony.findOne({ _id: balconyId }).populate({ path: "plants" });
+            const balcony = await Balcony.findOne({ balconyId: balconyId });
             res.status(200).send({
                 result: "success",
                 balcony: balcony,

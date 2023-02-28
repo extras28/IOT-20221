@@ -86,34 +86,46 @@ const plantController = {
     updateData: async (data) => {
         try {
             const { balconyId, enviromentTemperature, enviromentHumidity, sensorArr } = data;
-            const plants = await Plant.find({ balconyId: balconyId });
-            for (let i = 0; i < sensorArr.length; i++) {
-                const havePlant = plants.find((item) => {
-                    return item.plantId == `EC:FA:BC:28:0E:66${i}`;
+            const balcony = await Balcony.findOne({ balconyId: balconyId });
+            if (balcony) {
+                balcony.updateOne({
+                    temperature: enviromentTemperature,
+                    humidity: enviromentHumidity,
                 });
-                if (sensorArr[i] < 100) {
-                    if (havePlant) {
-                        await Plant.findOneAndUpdate(
-                            { plantId: balconyId + i.toString() },
-                            {
+
+                const plants = await Plant.find({ balconyId: balconyId });
+                for (let i = 0; i < sensorArr.length; i++) {
+                    const havePlant = plants.find((item) => {
+                        return item.plantId == `${balconyId}${i}`;
+                    });
+                    if (sensorArr[i] < 100) {
+                        if (havePlant) {
+                            await Plant.findOneAndUpdate(
+                                { plantId: balconyId + i.toString() },
+                                {
+                                    soilMoisture: sensorArr[i],
+                                    envTemp: enviromentTemperature,
+                                    envHumi: enviromentHumidity,
+                                }
+                            );
+                        } else {
+                            const newPlant = new Plant({
+                                balconyId: balconyId,
+                                plantId: balconyId + i.toString(),
+                                name: `Cây số ${i}`,
                                 soilMoisture: sensorArr[i],
-                            }
-                        );
+                                envTemp: enviromentTemperature,
+                                envHumi: enviromentHumidity,
+                                autoMode: false,
+                                status: "PENDING",
+                                image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
+                            });
+                            await newPlant.save();
+                        }
                     } else {
-                        const newPlant = new Plant({
-                            balconyId: balconyId,
-                            plantId: balconyId + i.toString(),
-                            name: `Cây số ${i}`,
-                            soilMoisture: sensorArr[i],
-                            autoMode: false,
-                            status: "PENDING",
-                            image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
-                        });
-                        await newPlant.save();
-                    }
-                } else {
-                    if (havePlant) {
-                        await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
+                        if (havePlant) {
+                            await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
+                        }
                     }
                 }
             }
@@ -147,10 +159,10 @@ const plantController = {
 
             // console.log(plant._id);
 
-            const balcony = await Balcony.findOne({ plants: { $in: [plant?._id] } });
-            return res.json({
-                balcony: balcony,
-            });
+            // const balcony = await Balcony.findOne({ plants: { $in: [plant?._id] } });
+            // return res.json({
+            //     balcony: balcony,
+            // });
             if (plant) {
                 res.status(200).json({
                     result: "success",
@@ -186,20 +198,16 @@ const plantController = {
                 });
             }
 
-            const plant = await Plant.findOneAndUpdate(
-                { plantId: plantId },
-                {
-                    autoMode: autoMode,
-                },
-                { new: true }
-            );
+            const plant = await Plant.findOne({ plantId: plantId });
 
             client.publish(
                 topic,
                 JSON.stringify({
+                    flag: 1,
                     autoMode: autoMode,
-                    plantId: plantId,
-                    soilHumidityBreakpoint: plant.plantHumidityBreakpoint,
+                    plantId: parseInt(plantId.slice(-1)),
+                    balconyId: plantId.slice(0, plantId.length - 1),
+                    soilMoistureBreakpoint: plant.soilMoistureBreakpoint,
                 }),
                 (err) => {
                     if (err) {
@@ -215,6 +223,8 @@ const plantController = {
                     }
                 }
             );
+
+            plant.updateOne({ autoMode: autoMode });
 
             if (plant) {
                 res.status(200).json({
@@ -236,11 +246,9 @@ const plantController = {
         }
     },
 
-    // findAll
     setBreakpoint: async (req, res) => {
         try {
-            const { plantId, enviromentTemperatureBreakpoint, enviromentHumidityBreakpoin, plantHumidityBreakpoint } =
-                req.body;
+            const { plantId, soilMoistureBreakpoint } = req.body;
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const account = await Account.findOne({
@@ -254,22 +262,16 @@ const plantController = {
                 });
             }
 
-            const plant = await Plant.findOneAndUpdate(
-                { plantId: plantId },
-                {
-                    // enviromentTemperatureBreakpoint: parseFloat(enviromentTemperatureBreakpoint),
-                    // enviromentHumidityBreakpoint: parseFloat(enviromentHumidityBreakpoin),
-                    plantHumidityBreakpoint: parseFloat(plantHumidityBreakpoint),
-                },
-                { new: true }
-            );
+            const plant = await Plant.findOne({ plantId: plantId });
 
             client.publish(
                 topic,
                 JSON.stringify({
-                    soilHumidityBreakpoint: parseInt(plantHumidityBreakpoint),
-                    plantId: plantId,
+                    flag: 2,
                     autoMode: plant.autoMode,
+                    plantId: parseInt(plantId.slice(-1)),
+                    balconyId: plantId.slice(0, plantId.length - 1),
+                    soilMoistureBreakpoint: soilMoistureBreakpoint,
                 }),
                 (err) => {
                     if (err) {
@@ -307,6 +309,7 @@ const plantController = {
 
     find: async (req, res) => {
         try {
+            const { balconyId } = req.query;
             const accessToken = req.headers.authorization.split(" ")[1];
 
             const account = await Account.findOne({
@@ -320,7 +323,7 @@ const plantController = {
                 });
             }
 
-            const plants = await Plant.find();
+            const plants = await Plant.find({ balconyId: balconyId });
 
             return res.status(200).send({
                 result: "success",
@@ -328,6 +331,43 @@ const plantController = {
             });
         } catch (error) {
             res.status(404).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
+
+    update: async (req, res) => {
+        try {
+            const { plantId, name, image } = req.body;
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.status(403).send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const plant = await Plant.findOneAndUpdate(
+                { plantId: plantId },
+                {
+                    name: name,
+                    image: image,
+                },
+                { new: true }
+            );
+
+            return res.status(200).json({
+                result: "success",
+                plant: plant,
+            });
+        } catch (error) {
+            res.status(400).json({
                 result: "failed",
                 message: error.message,
             });

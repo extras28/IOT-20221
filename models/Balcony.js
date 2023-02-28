@@ -7,6 +7,7 @@ const balcony = new mongoose.Schema(
         humidity: Number,
         temperature: Number,
         balconyId: String,
+        image: String,
     },
     {
         timestamps: true,

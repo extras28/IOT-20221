@@ -103,6 +103,68 @@ const balconyController = {
             });
         }
     },
+    update: async (req, res) => {
+        try {
+            const { balconyId, image, name } = req.body;
+
+            const accessToken = req.headers.authorization.split(" ")[1];
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.status(403).send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const balcony = await Balcony.findOneAndUpdate(
+                { balconyId: balconyId },
+                {
+                    name: name,
+                    image: image,
+                },
+                { new: true }
+            );
+            res.status(200).send({
+                result: "success",
+                balcony: balcony,
+            });
+        } catch (error) {
+            res.status(404).send({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
+    delete: async (req, res) => {
+        try {
+            const { balconyId } = req.query;
+
+            const accessToken = req.headers.authorization.split(" ")[1];
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.status(403).send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            await Balcony.findOneAndDelete({ balconyId: balconyId });
+            res.status(200).send({
+                result: "success",
+            });
+        } catch (error) {
+            res.status(404).send({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
 };
 
 module.exports = balconyController;

@@ -14,7 +14,7 @@ router.get("/api/v1/balcony/detail", balconyController.detail);
 //update
 router.put("/api/v1/balcony/update", balconyController.update);
 
-//update
+//delete
 router.delete("/api/v1/balcony/delete", balconyController.delete);
 
 module.exports = router;

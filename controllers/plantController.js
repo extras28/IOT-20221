@@ -89,8 +89,8 @@ const plantController = {
             const balcony = await Balcony.findOne({ balconyId: balconyId });
             if (balcony) {
                 await balcony.updateOne({
-                    temperature: enviromentTemperature,
-                    humidity: enviromentHumidity,
+                    temperature: enviromentTemperature ?? 0,
+                    humidity: enviromentHumidity ?? 0,
                 });
 
                 const plants = await Plant.find({ balconyId: balconyId });

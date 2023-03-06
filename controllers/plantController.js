@@ -88,7 +88,7 @@ const plantController = {
             const { balconyId, enviromentTemperature, enviromentHumidity, sensorArr } = data;
             const balcony = await Balcony.findOne({ balconyId: balconyId });
             if (balcony) {
-                balcony.updateOne({
+                await balcony.updateOne({
                     temperature: enviromentTemperature,
                     humidity: enviromentHumidity,
                 });

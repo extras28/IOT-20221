@@ -157,6 +157,7 @@ void setRelayState(uint8_t relay, bool state) {
       digitalWrite(0, HIGH);
     }
     Serial.print("turn off relay: "); Serial.println(relay);
+    Serial.print("voltage of pin "); Serial.print(relay); Serial.print(": "); Serial.println(pcf8574.digitalRead(relay));
   } else {
 
     if (!relay_sensor_state[relay]) {
@@ -170,6 +171,7 @@ void setRelayState(uint8_t relay, bool state) {
     }
 
     Serial.print("turn on relay: "); Serial.println(relay);
+    Serial.print("voltage of pin "); Serial.print(relay); Serial.print(": "); Serial.println(pcf8574.digitalRead(relay));
   }
 }
 
@@ -371,13 +373,9 @@ void loop() {
   for (int i = 0; i < 8; i++) {
     if (auto_mode[i]) {
       if (breakpoint[i] > readMoisture(i)) {
-        if (!relay_sensor_state[i]) {
-          setRelayState(i, true);
-        }
+        setRelayState(i, true);
       } else {
-        if (relay_sensor_state[i]) {
-          setRelayState(i, false);
-        }
+        setRelayState(i, false);
       }
     }
   }

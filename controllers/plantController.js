@@ -198,7 +198,7 @@ const plantController = {
                 });
             }
 
-            const plant = await Plant.findOne({ plantId: plantId });
+            const plant = await Plant.findOneAndUpdate({ plantId: plantId }, { autoMode: autoMode });
 
             client.publish(
                 topic,

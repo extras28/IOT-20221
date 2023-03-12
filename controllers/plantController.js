@@ -89,13 +89,13 @@ const plantController = {
             const balcony = await Balcony.findOne({ balconyId: balconyId });
             if (balcony) {
                 await balcony.updateOne({
-                    temperature: enviromentTemperature ?? 0,
-                    humidity: enviromentHumidity ?? 0,
+                    temperature: enviromentTemperature ?? 20,
+                    humidity: enviromentHumidity ?? 78,
                 });
 
                 const plants = await Plant.find({ balconyId: balconyId });
                 for (let i = 0; i < sensorArr.length; i++) {
-                    const havePlant = plants.find((item) => {
+                    const havePlant = await plants.find((item) => {
                         return item.plantId == `${balconyId}${i}`;
                     });
                     if (sensorArr[i] < 100) {

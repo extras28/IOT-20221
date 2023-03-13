@@ -157,7 +157,6 @@ void setRelayState(uint8_t relay, bool state) {
       digitalWrite(0, HIGH);
     }
     Serial.print("turn off relay: "); Serial.println(relay);
-    Serial.print("voltage of pin "); Serial.print(relay); Serial.print(": "); Serial.println(pcf8574.digitalRead(relay));
   } else {
 
     if (!relay_sensor_state[relay]) {
@@ -171,7 +170,6 @@ void setRelayState(uint8_t relay, bool state) {
     }
 
     Serial.print("turn on relay: "); Serial.println(relay);
-    Serial.print("voltage of pin "); Serial.print(relay); Serial.print(": "); Serial.println(pcf8574.digitalRead(relay));
   }
 }
 
@@ -279,10 +277,10 @@ int readMoisture(int channel) {
 
   int moisture_percent = map(moisture, 0, 1023, 100, 0); // chuyển đổi giá trị ADC sang phần trăm độ ẩm đất
 
-  if (moisture_percent < 60) {
-    return moisture_percent;
-  }
-  return 100;
+  //  if (moisture_percent < 60) {
+  return moisture_percent;
+  //  }
+  //  return 100;
 }
 
 void setup() {
@@ -374,8 +372,12 @@ void loop() {
     if (auto_mode[i]) {
       if (breakpoint[i] > readMoisture(i)) {
         setRelayState(i, true);
+        int mois = readMoisture(i);
+        Serial.print("tủn on"); Serial.println(mois);
       } else {
         setRelayState(i, false);
+        int mois = readMoisture(i);
+        Serial.print("tủn off"); Serial.println(mois);
       }
     }
   }

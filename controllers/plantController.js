@@ -10,32 +10,32 @@ const options = {};
 const client = mqtt.connect(broker, options);
 
 const plantController = {
-    create: async (req, res) => {
-        try {
-            const plants = await Plant.find({ balconyId: "EC:FA:BC:28:0E:66" });
-            // const plant = plants.find((item) => {
-            //     console.log(item.plantId);
-            //     return item.plantId === "EC:FA:BC:28:0E:660";
-            // });
-            // console.log(plant);
-            let testArr = [];
-            for (let i = 0; i < 15; i++) {
-                const havePlant = plants.find((item) => {
-                    return item.plantId == `EC:FA:BC:28:0E:66${i}`;
-                });
-                testArr = testArr.concat(havePlant);
-            }
-            res.send({
-                plants: plants,
-                havePlant: testArr,
-            });
-        } catch (error) {
-            res.status(404).json({
-                result: "failed",
-                message: error.message,
-            });
-        }
-    },
+    // create: async (req, res) => {
+    //     try {
+    //         const plants = await Plant.find({ balconyId: "EC:FA:BC:28:0E:66" });
+    //         // const plant = plants.find((item) => {
+    //         //     console.log(item.plantId);
+    //         //     return item.plantId === "EC:FA:BC:28:0E:660";
+    //         // });
+    //         // console.log(plant);
+    //         let testArr = [];
+    //         for (let i = 0; i < 15; i++) {
+    //             const havePlant = plants.find((item) => {
+    //                 return item.plantId == `EC:FA:BC:28:0E:66${i}`;
+    //             });
+    //             testArr = testArr.concat(havePlant);
+    //         }
+    //         res.send({
+    //             plants: plants,
+    //             havePlant: testArr,
+    //         });
+    //     } catch (error) {
+    //         res.status(404).json({
+    //             result: "failed",
+    //             message: error.message,
+    //         });
+    //     }
+    // },
 
     control: async (req, res) => {
         try {
@@ -108,20 +108,21 @@ const plantController = {
                                     envHumi: enviromentHumidity,
                                 }
                             );
-                        } else {
-                            const newPlant = new Plant({
-                                balconyId: balconyId,
-                                plantId: balconyId + i.toString(),
-                                name: `Cây số ${i}`,
-                                soilMoisture: sensorArr[i],
-                                envTemp: enviromentTemperature,
-                                envHumi: enviromentHumidity,
-                                autoMode: false,
-                                status: "PENDING",
-                                image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
-                            });
-                            await newPlant.save();
                         }
+                        // else {
+                        //     const newPlant = new Plant({
+                        //         balconyId: balconyId,
+                        //         plantId: balconyId + i.toString(),
+                        //         name: `Cây số ${i}`,
+                        //         soilMoisture: sensorArr[i],
+                        //         envTemp: enviromentTemperature,
+                        //         envHumi: enviromentHumidity,
+                        //         autoMode: false,
+                        //         status: "PENDING",
+                        //         image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
+                        //     });
+                        //     await newPlant.save();
+                        // }
                     } else {
                         if (havePlant) {
                             await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
@@ -369,6 +370,55 @@ const plantController = {
                 result: "success",
                 plant: plant,
             });
+        } catch (error) {
+            res.status(400).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
+
+    create: async (req, res) => {
+        try {
+            const { name, plantOrder, balconyId } = req.body;
+
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+
+            const balcony = await Balcony.findOne({ balconyId: balconyId });
+            if (balcony) {
+                const newPlant = new Plant({
+                    balconyId: balconyId,
+                    plantId: balconyId + plantOrder.toString(),
+                    name: name,
+                    // soilMoisture: sensorArr[plantOrder],
+                    // envTemp: enviromentTemperature,
+                    // envHumi: enviromentHumidity,
+                    autoMode: false,
+                    // status: "PENDING",
+                    image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
+                });
+                await newPlant.save();
+                res.status(200).json({
+                    result: "success",
+                    plant: newPlant,
+                });
+            } else {
+                res.status(400).json({
+                    result: "failed",
+                    message: "Ban công không tồn tại",
+                });
+            }
         } catch (error) {
             res.status(400).json({
                 result: "failed",

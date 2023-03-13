@@ -3,7 +3,7 @@ const plantController = require("../controllers/plantController");
 const router = express.Router();
 
 // create plant
-router.post("/api/v1/plant/create", plantController.create);
+// router.post("/api/v1/plant/create", plantController.create);
 
 // control
 router.post("/api/v1/plant/control", plantController.control);
@@ -22,5 +22,8 @@ router.get("/api/v1/plant/find", plantController.find);
 
 //update name and image
 router.put("/api/v1/plant/update", plantController.update);
+
+//create
+router.post("/api/v1/plant/create", plantController.create);
 
 module.exports = router;

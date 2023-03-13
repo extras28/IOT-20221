@@ -98,32 +98,32 @@ const plantController = {
                     const havePlant = await plants.find((item) => {
                         return item.plantId == `${balconyId}${i}`;
                     });
-                    if (sensorArr[i] < 100) {
-                        if (havePlant) {
-                            await Plant.findOneAndUpdate(
-                                { plantId: balconyId + i.toString() },
-                                {
-                                    soilMoisture: sensorArr[i],
-                                    envTemp: enviromentTemperature,
-                                    envHumi: enviromentHumidity,
-                                }
-                            );
-                        }
-                        // else {
-                        //     const newPlant = new Plant({
-                        //         balconyId: balconyId,
-                        //         plantId: balconyId + i.toString(),
-                        //         name: `Cây số ${i}`,
-                        //         soilMoisture: sensorArr[i],
-                        //         envTemp: enviromentTemperature,
-                        //         envHumi: enviromentHumidity,
-                        //         autoMode: false,
-                        //         status: "PENDING",
-                        //         image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
-                        //     });
-                        //     await newPlant.save();
-                        // }
+                    // if (sensorArr[i] < 100) {
+                    if (havePlant) {
+                        await Plant.findOneAndUpdate(
+                            { plantId: balconyId + i.toString() },
+                            {
+                                soilMoisture: sensorArr[i],
+                                envTemp: enviromentTemperature,
+                                envHumi: enviromentHumidity,
+                            }
+                        );
                     }
+                    // else {
+                    //     const newPlant = new Plant({
+                    //         balconyId: balconyId,
+                    //         plantId: balconyId + i.toString(),
+                    //         name: `Cây số ${i}`,
+                    //         soilMoisture: sensorArr[i],
+                    //         envTemp: enviromentTemperature,
+                    //         envHumi: enviromentHumidity,
+                    //         autoMode: false,
+                    //         status: "PENDING",
+                    //         image: "https://i.pinimg.com/236x/40/d1/0f/40d10f4bf9cbad18736419123528d989.jpg",
+                    //     });
+                    //     await newPlant.save();
+                    // }
+                    // }
                     // else {
                     //     if (havePlant) {
                     //         await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });

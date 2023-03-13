@@ -123,11 +123,12 @@ const plantController = {
                         //     });
                         //     await newPlant.save();
                         // }
-                    } else {
-                        if (havePlant) {
-                            await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
-                        }
                     }
+                    // else {
+                    //     if (havePlant) {
+                    //         await Plant.findOneAndDelete({ plantId: balconyId + i.toString() });
+                    //     }
+                    // }
                 }
             }
         } catch (error) {

@@ -427,6 +427,32 @@ const plantController = {
             });
         }
     },
+    delete: async (req, res) => {
+        try {
+            const { _id } = req.query;
+            const accessToken = req.headers.authorization.split(" ")[1];
+
+            const account = await Account.findOne({
+                accessToken: accessToken,
+            });
+
+            if (!account) {
+                return res.send({
+                    result: "failed",
+                    message: "Không đủ quyền truy cập",
+                });
+            }
+            await Plant.findByIdAndDelete(_id);
+            res.status(200).json({
+                result: "success",
+            });
+        } catch (error) {
+            res.status(400).json({
+                result: "failed",
+                message: error.message,
+            });
+        }
+    },
 };
 
 module.exports = plantController;

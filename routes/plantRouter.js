@@ -26,4 +26,7 @@ router.put("/api/v1/plant/update", plantController.update);
 //create
 router.post("/api/v1/plant/create", plantController.create);
 
+//delete
+router.delete("/api/v1/plant/delete", plantController.delete);
+
 module.exports = router;

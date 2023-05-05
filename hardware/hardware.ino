@@ -142,7 +142,7 @@ void setRelayState(uint8_t relay, bool state) {
       if (relay < 8) {
         pcf85741.digitalWrite(relay, HIGH);
       } else {
-        pcf85742.digitalWrite(relay, HIGH);
+        pcf85742.digitalWrite(relay - 8, HIGH);
       }
       relay_sensor_state[relay] = false;
     }
@@ -168,7 +168,7 @@ void setRelayState(uint8_t relay, bool state) {
 
         pcf85741.digitalWrite(relay, LOW);
       } else {
-        pcf85742.digitalWrite(relay, LOW);
+        pcf85742.digitalWrite(relay - 8, LOW);
       }
       relay_sensor_state[relay] = true;
     }

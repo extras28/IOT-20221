@@ -58,8 +58,14 @@ const plantController = {
                 JSON.stringify({
                     flag: 0,
                     requestCode: parseInt(requestCode),
-                    plantId: parseInt(plantId.slice(-1)),
-                    balconyId: plantId.slice(0, plantId.length - 1),
+                    plantId:
+                        parseInt(plantId.slice(17, 19)) > 9
+                            ? parseInt(plantId.slice(-2))
+                            : parseInt(plantId.slice(-1)),
+                    balconyId:
+                        parseInt(plantId.slice(-1)) > 9
+                            ? plantId.slice(0, plantId.length - 2)
+                            : plantId.slice(0, plantId.length - 1),
                 }),
                 (err) => {
                     if (err) {
@@ -85,7 +91,12 @@ const plantController = {
 
     updateData: async (data) => {
         try {
-            const { balconyId, enviromentTemperature, enviromentHumidity, sensorArr } = data;
+            const {
+                balconyId,
+                enviromentTemperature,
+                enviromentHumidity,
+                sensorArr,
+            } = data;
             const balcony = await Balcony.findOne({ balconyId: balconyId });
             if (balcony) {
                 await balcony.updateOne({
@@ -200,15 +211,24 @@ const plantController = {
                 });
             }
 
-            const plant = await Plant.findOneAndUpdate({ plantId: plantId }, { autoMode: autoMode });
+            const plant = await Plant.findOneAndUpdate(
+                { plantId: plantId },
+                { autoMode: autoMode }
+            );
 
             client.publish(
                 topic,
                 JSON.stringify({
                     flag: 1,
                     autoMode: autoMode,
-                    plantId: parseInt(plantId.slice(-1)),
-                    balconyId: plantId.slice(0, plantId.length - 1),
+                    plantId:
+                        parseInt(plantId.slice(17, 19)) > 9
+                            ? parseInt(plantId.slice(-2))
+                            : parseInt(plantId.slice(-1)),
+                    balconyId:
+                        parseInt(plantId.slice(-1)) > 9
+                            ? plantId.slice(0, plantId.length - 2)
+                            : plantId.slice(0, plantId.length - 1),
                     soilMoistureBreakpoint: plant.soilMoistureBreakpoint,
                 }),
                 (err) => {
@@ -232,7 +252,9 @@ const plantController = {
                 res.status(200).json({
                     result: "success",
                     plant: plant,
-                    message: `Chế độ tự động đã được ${autoMode ? "bật" : "tắt"} đối với cây ${plantId}`,
+                    message: `Chế độ tự động đã được ${
+                        autoMode ? "bật" : "tắt"
+                    } đối với cây ${plantId}`,
                 });
             } else {
                 res.status(200).json({
@@ -274,8 +296,14 @@ const plantController = {
                 JSON.stringify({
                     flag: 2,
                     autoMode: plant.autoMode,
-                    plantId: parseInt(plantId.slice(-1)),
-                    balconyId: plantId.slice(0, plantId.length - 1),
+                    plantId:
+                        parseInt(plantId.slice(17, 19)) > 9
+                            ? parseInt(plantId.slice(-2))
+                            : parseInt(plantId.slice(-1)),
+                    balconyId:
+                        parseInt(plantId.slice(-1)) > 9
+                            ? plantId.slice(0, plantId.length - 2)
+                            : plantId.slice(0, plantId.length - 1),
                     soilMoistureBreakpoint: soilMoistureBreakpoint,
                 }),
                 (err) => {

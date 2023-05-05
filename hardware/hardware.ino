@@ -30,28 +30,30 @@ PubSubClient client(espClient);
 #define DHTType DHT11
 DHT DHT(DHT11Pin, DHTType);
 
-const int s0 = 14; // chân S0 của module 74HC4067
-const int s1 = 15; // chân S1 của module 74HC4067
-const int s2 = 12; // chân S2 của module 74HC4067
-const int s3 = 13; // chân S3 của module 74HC4067
+const int s0 = 14;  // chân S0 của module 74HC4067
+const int s1 = 15;  // chân S1 của module 74HC4067
+const int s2 = 12;  // chân S2 của module 74HC4067
+const int s3 = 13;  // chân S3 của module 74HC4067
 
-const int sensor_pin = A0; // chân GPIO của ESP8266 để đọc dữ liệu từ module 74HC4067
-const int COM_PIN = 14;   // chân COM kết nối với chân GND của 74HC4067
+const int sensor_pin = A0;  // chân GPIO của ESP8266 để đọc dữ liệu từ module 74HC4067
+const int COM_PIN = 14;     // chân COM kết nối với chân GND của 74HC4067
 
 // Địa chỉ I2C của module PCF8574
-PCF8574 pcf8574(0x27);
+PCF8574 pcf85741(0x27);
+PCF8574 pcf85742(0x20);
+
 
 // Trạng thái của các relay
-bool relay_sensor_state[8];
+bool relay_sensor_state[16];
 
 // trạng thái của relay máy bơm
 bool relay_pumper_state = false;
 
 // trạng thái auto mode của từng vòi
-bool auto_mode[8];
+bool auto_mode[16];
 
 // breakpoint của từng sensor
-int breakpoint[8];
+int breakpoint[16];
 
 // Hàm kết nối wifi
 void connectWiFi() {
@@ -77,23 +79,20 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.println(receiving_topic);
   Serial.print("Message:");
   for (int i = 0; i < length; i++) {
-    Serial.print((char) payload[i]);
+    Serial.print((char)payload[i]);
   }
   Serial.println();
 
   // converse to JSON
-  StaticJsonDocument <256> doc;
+  StaticJsonDocument<256> doc;
   deserializeJson(doc, payload);
   if (doc["balconyId"] == sensorId.c_str()) {
     switch (doc["flag"].as<int>()) {
       case 0:
         //manual control
-        if (doc["requestCode"].as<int>() == 1)
-        {
+        if (doc["requestCode"].as<int>() == 1) {
           setRelayState(doc["plantId"].as<int>(), true);
-        }
-        else if (doc["requestCode"].as<int>() == 0)
-        {
+        } else if (doc["requestCode"].as<int>() == 0) {
           setRelayState(doc["plantId"].as<int>(), false);
         };
         break;
@@ -140,11 +139,15 @@ void reconnect() {
 void setRelayState(uint8_t relay, bool state) {
   if (!state) {
     if (relay_sensor_state[relay]) {
-      pcf8574.digitalWrite(relay, HIGH);
+      if (relay < 8) {
+        pcf85741.digitalWrite(relay, HIGH);
+      } else {
+        pcf85742.digitalWrite(relay, HIGH);
+      }
       relay_sensor_state[relay] = false;
     }
 
-    for (int i = 0; i < 8 ; i++) {
+    for (int i = 0; i < 16; i++) {
       if (relay_sensor_state[i]) {
         relay_pumper_state = true;
         break;
@@ -156,11 +159,17 @@ void setRelayState(uint8_t relay, bool state) {
     if (!relay_pumper_state) {
       digitalWrite(0, HIGH);
     }
-    Serial.print("turn off relay: "); Serial.println(relay);
+    Serial.print("turn off relay: ");
+    Serial.println(relay);
   } else {
 
     if (!relay_sensor_state[relay]) {
-      pcf8574.digitalWrite(relay, LOW);
+      if (relay < 8) {
+
+        pcf85741.digitalWrite(relay, LOW);
+      } else {
+        pcf85742.digitalWrite(relay, LOW);
+      }
       relay_sensor_state[relay] = true;
     }
 
@@ -169,7 +178,8 @@ void setRelayState(uint8_t relay, bool state) {
       relay_pumper_state = true;
     }
 
-    Serial.print("turn on relay: "); Serial.println(relay);
+    Serial.print("turn on relay: ");
+    Serial.println(relay);
   }
 }
 
@@ -275,7 +285,7 @@ int readMoisture(int channel) {
 
   int moisture = analogRead(sensor_pin);
 
-  int moisture_percent = map(moisture, 0, 1023, 100, 0); // chuyển đổi giá trị ADC sang phần trăm độ ẩm đất
+  int moisture_percent = map(moisture, 0, 1023, 100, 0);  // chuyển đổi giá trị ADC sang phần trăm độ ẩm đất
 
   //  if (moisture_percent < 60) {
   return moisture_percent;
@@ -296,17 +306,26 @@ void setup() {
   pinMode(0, OUTPUT);
 
   // Set pinMode to OUTPUT
-  pcf8574.pinMode(0, OUTPUT);
-  pcf8574.pinMode(1, OUTPUT);
-  pcf8574.pinMode(2, OUTPUT);
-  pcf8574.pinMode(3, OUTPUT);
-  pcf8574.pinMode(4, OUTPUT);
-  pcf8574.pinMode(5, OUTPUT);
-  pcf8574.pinMode(6, OUTPUT);
-  pcf8574.pinMode(7, OUTPUT);
+  pcf85741.pinMode(0, OUTPUT);
+  pcf85741.pinMode(1, OUTPUT);
+  pcf85741.pinMode(2, OUTPUT);
+  pcf85741.pinMode(3, OUTPUT);
+  pcf85741.pinMode(4, OUTPUT);
+  pcf85741.pinMode(5, OUTPUT);
+  pcf85741.pinMode(6, OUTPUT);
+  pcf85741.pinMode(7, OUTPUT);
+  pcf85742.pinMode(0, OUTPUT);
+  pcf85742.pinMode(1, OUTPUT);
+  pcf85742.pinMode(2, OUTPUT);
+  pcf85742.pinMode(3, OUTPUT);
+  pcf85742.pinMode(4, OUTPUT);
+  pcf85742.pinMode(5, OUTPUT);
+  pcf85742.pinMode(6, OUTPUT);
+  pcf85742.pinMode(7, OUTPUT);
 
   // Khởi tạo kết nối I2C
-  pcf8574.begin();
+  pcf85741.begin();
+  pcf85742.begin();
 
 
   pinMode(s0, OUTPUT);
@@ -318,16 +337,24 @@ void setup() {
 
 
   // set trạng thái mặc định cho các relay là tắt
-  pcf8574.digitalWrite(0, HIGH);
-  pcf8574.digitalWrite(1, HIGH);
-  pcf8574.digitalWrite(2, HIGH);
-  pcf8574.digitalWrite(3, HIGH);
-  pcf8574.digitalWrite(4, HIGH);
-  pcf8574.digitalWrite(5, HIGH);
-  pcf8574.digitalWrite(6, HIGH);
-  pcf8574.digitalWrite(7, HIGH);
+  pcf85741.digitalWrite(0, HIGH);
+  pcf85741.digitalWrite(1, HIGH);
+  pcf85741.digitalWrite(2, HIGH);
+  pcf85741.digitalWrite(3, HIGH);
+  pcf85741.digitalWrite(4, HIGH);
+  pcf85741.digitalWrite(5, HIGH);
+  pcf85741.digitalWrite(6, HIGH);
+  pcf85741.digitalWrite(7, HIGH);
+  pcf85742.digitalWrite(0, HIGH);
+  pcf85742.digitalWrite(1, HIGH);
+  pcf85742.digitalWrite(2, HIGH);
+  pcf85742.digitalWrite(3, HIGH);
+  pcf85742.digitalWrite(4, HIGH);
+  pcf85742.digitalWrite(5, HIGH);
+  pcf85742.digitalWrite(6, HIGH);
+  pcf85742.digitalWrite(7, HIGH);
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 16; i++) {
     relay_sensor_state[i] = false;
     auto_mode[i] = false;
     breakpoint[i] = 100;
@@ -361,23 +388,25 @@ void loop() {
 
   for (int channel = 0; channel < 16; channel++) {
 
-    int moisture = readMoisture(channel); // đọc giá trị độ ẩm đất từ kênh được chọn
+    int moisture = readMoisture(channel);  // đọc giá trị độ ẩm đất từ kênh được chọn
 
     jsonArray.add(moisture);
 
     delay(20);
   }
 
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 16; i++) {
     if (auto_mode[i]) {
       if (breakpoint[i] > readMoisture(i)) {
         setRelayState(i, true);
         int mois = readMoisture(i);
-        Serial.print("tủn on"); Serial.println(mois);
+        Serial.print("tủn on");
+        Serial.println(mois);
       } else {
         setRelayState(i, false);
         int mois = readMoisture(i);
-        Serial.print("tủn off"); Serial.println(mois);
+        Serial.print("tủn off");
+        Serial.println(mois);
       }
     }
   }

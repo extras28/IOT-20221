@@ -63,7 +63,7 @@ const plantController = {
                             ? parseInt(plantId.slice(-2))
                             : parseInt(plantId.slice(-1)),
                     balconyId:
-                        parseInt(plantId.slice(-1)) > 9
+                        parseInt(plantId.slice(17, 19)) > 9
                             ? plantId.slice(0, plantId.length - 2)
                             : plantId.slice(0, plantId.length - 1),
                 }),
@@ -226,7 +226,7 @@ const plantController = {
                             ? parseInt(plantId.slice(-2))
                             : parseInt(plantId.slice(-1)),
                     balconyId:
-                        parseInt(plantId.slice(-1)) > 9
+                        parseInt(plantId.slice(17, 19)) > 9
                             ? plantId.slice(0, plantId.length - 2)
                             : plantId.slice(0, plantId.length - 1),
                     soilMoistureBreakpoint: plant.soilMoistureBreakpoint,
@@ -301,7 +301,7 @@ const plantController = {
                             ? parseInt(plantId.slice(-2))
                             : parseInt(plantId.slice(-1)),
                     balconyId:
-                        parseInt(plantId.slice(-1)) > 9
+                        parseInt(plantId.slice(17, 19)) > 9
                             ? plantId.slice(0, plantId.length - 2)
                             : plantId.slice(0, plantId.length - 1),
                     soilMoistureBreakpoint: soilMoistureBreakpoint,

@@ -429,7 +429,7 @@ const plantController = {
                 plantId: balconyId + plantOrder,
             });
             if (checkedPlant) {
-                res.status(400).send({
+                return res.status(400).send({
                     result: "failed",
                     message: "Chân tưới đã tồn tại",
                 });

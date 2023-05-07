@@ -12,6 +12,7 @@ const plant = new mongoose.Schema(
         soilMoistureBreakpoint: Number,
         status: String,
         image: String,
+        isWatering: Boolean,
     },
     { timestamps: true }
 );

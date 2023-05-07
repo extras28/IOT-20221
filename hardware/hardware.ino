@@ -137,12 +137,16 @@ void reconnect() {
 
 // Hàm gửi dữ liệu điều khiển relay đến module PCF8574
 void setRelayState(uint8_t relay, bool state) {
+   int temp_relay = relay;
   if (!state) {
     if (relay_sensor_state[relay]) {
       if (relay < 8) {
+        Serial.println("tắt nhỏ hơn 8");
         pcf85741.digitalWrite(relay, HIGH);
       } else {
-        pcf85742.digitalWrite(relay - 8, HIGH);
+        temp_relay = relay - 8;
+        Serial.println("tắt lớn hơn 8");
+        pcf85742.digitalWrite(temp_relay, HIGH);
       }
       relay_sensor_state[relay] = false;
     }
@@ -162,13 +166,14 @@ void setRelayState(uint8_t relay, bool state) {
     Serial.print("turn off relay: ");
     Serial.println(relay);
   } else {
-
     if (!relay_sensor_state[relay]) {
       if (relay < 8) {
-
+        Serial.println("bật nhỏ hơn 8");
         pcf85741.digitalWrite(relay, LOW);
       } else {
-        pcf85742.digitalWrite(relay - 8, LOW);
+        temp_relay = relay - 8;
+        Serial.println("bật lớn hơn 8");
+        pcf85742.digitalWrite(temp_relay, LOW);
       }
       relay_sensor_state[relay] = true;
     }
@@ -400,12 +405,12 @@ void loop() {
       if (breakpoint[i] > readMoisture(i)) {
         setRelayState(i, true);
         int mois = readMoisture(i);
-        Serial.print("tủn on");
+        Serial.print("turn on");
         Serial.println(mois);
       } else {
         setRelayState(i, false);
         int mois = readMoisture(i);
-        Serial.print("tủn off");
+        Serial.print("turn off");
         Serial.println(mois);
       }
     }

@@ -425,6 +425,15 @@ const plantController = {
             }
 
             const balcony = await Balcony.findOne({ balconyId: balconyId });
+            const checkedPlant = await Plant.findOne({
+                plantId: balconyId + plantOrder,
+            });
+            if (checkedPlant) {
+                res.status(400).send({
+                    result: "failed",
+                    message: "Chân tưới đã tồn tại",
+                });
+            }
             if (balcony) {
                 const newPlant = new Plant({
                     balconyId: balconyId,

@@ -98,6 +98,7 @@ const plantController = {
                 sensorArr,
             } = data;
             const balcony = await Balcony.findOne({ balconyId: balconyId });
+            
             if (balcony) {
                 await balcony.updateOne({
                     temperature: enviromentTemperature ?? 20,
@@ -429,7 +430,7 @@ const plantController = {
                 plantId: balconyId + plantOrder,
             });
             if (checkedPlant) {
-                return res.status(400).send({
+                return  res.status(400).send({
                     result: "failed",
                     message: "Chân tưới đã tồn tại",
                 });

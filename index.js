@@ -8,6 +8,8 @@ const { connectMQTT } = require("./utils/mqtt");
 const accountRouter = require("./routes/accountRouter");
 const balconyRouter = require("./routes/balconyRouter");
 const plantRouter = require("./routes/plantRouter");
+const http = require("http");
+const { bindHttpServer } = require("./WebSocket/index");
 
 const corsOpts = {
     origin: "*",
@@ -73,6 +75,11 @@ app.use("/", function (req, res, next) {
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
+
+let httpServer = http.createServer(app);
+
+bindHttpServer(httpServer);
+
+httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Your app listening at http://localhost:${PORT}`);
 });

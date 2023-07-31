@@ -18,7 +18,7 @@ const accountController = {
                 if (!account) {
                     return res.send({
                         result: "failed",
-                        message: "Không đủ quyền truy cập",
+                        reason: "Không đủ quyền truy cập",
                     });
                 }
 
@@ -35,7 +35,7 @@ const accountController = {
             if (!account) {
                 return res.status(404).json({
                     result: "failed",
-                    message: "Tài khoản không tồn tại",
+                    reason: "Tài khoản không tồn tại",
                 });
             }
 
@@ -45,7 +45,7 @@ const accountController = {
             if (!validPassword) {
                 return res.status(404).json({
                     result: "failed",
-                    message: "Sai mật khẩu",
+                    reason: "Sai mật khẩu",
                 });
             }
 

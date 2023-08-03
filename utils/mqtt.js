@@ -21,7 +21,8 @@ const connectMQTT = (topic) => {
       updateData(data);
 
       // Broadcast the MQTT message to websocket clients
-      wsServer.broadcastUTF(data);
+      wsServer?.broadcastUTF(JSON.stringify(data));
+      // wsServer?.broadcast("sdf")
     });
   } catch (err) {
     console.log(err);

@@ -63,4 +63,4 @@ function bindHttpServer(httpServer) {
   });
 }
 
-module.exports = { bindHttpServer, conns };
+module.exports = { bindHttpServer, conns, wsServer };

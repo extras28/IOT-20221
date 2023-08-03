@@ -1,10 +1,9 @@
 const mqtt = require("mqtt");
 const { updateData } = require("../controllers/plantController");
-const { conns } = require("../WebSocket");
+const { conns, wsServer } = require("../WebSocket");
 
 const options = {};
 const broker = "mqtt://broker.mqttdashboard.com:1883";
-console.log(conns);
 
 const connectMQTT = (topic) => {
   try {
@@ -22,12 +21,7 @@ const connectMQTT = (topic) => {
       updateData(data);
 
       // Broadcast the MQTT message to websocket clients
-      conns.forEach((conn) => {
-        // Check if connection is open before sending
-        if (conn.connected) {
-          conn.sendUTF(conns.length);
-        }
-      });
+      wsServer.broadcastUTF(data);
     });
   } catch (err) {
     console.log(err);

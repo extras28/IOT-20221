@@ -43,7 +43,7 @@ function bindHttpServer(httpServer) {
     connection.on("message", function (message) {
       if (message.type === "utf8") {
         console.log("Received Message: " + message.utf8Data);
-        // connection.sendUTF(JSON.stringify(message.utf8Data));
+        connection.sendUTF(JSON.stringify(message.utf8Data));
       } else if (message.type === "binary") {
         console.log(
           "Received Binary Message of " + message.binaryData.length + " bytes"

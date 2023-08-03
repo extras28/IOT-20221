@@ -25,7 +25,7 @@ const connectMQTT = (topic) => {
       conns.forEach((conn) => {
         // Check if connection is open before sending
         if (conn.connected) {
-          conn.sendUTF(JSON.stringify(data));
+          conn.sendUTF(conns.length);
         }
       });
     });
